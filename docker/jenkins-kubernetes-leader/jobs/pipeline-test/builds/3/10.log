@@ -1,0 +1,3 @@
+[pipeline-test] Running shell script
++ go version
+go version go1.9.1 linux/amd64

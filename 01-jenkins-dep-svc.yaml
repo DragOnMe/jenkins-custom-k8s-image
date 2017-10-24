@@ -1,0 +1,48 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: jenkins-leader
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: jenkins-leader
+    spec:
+      securityContext:
+        # Jenkins uid:gid=1000:1000
+        fsGroup: 1000
+      containers:
+        - name: jenkins-leader
+          image: jenkins
+          volumeMounts:
+          - name: jenkins-home
+            mountPath: /var/jenkins_home
+          ports:
+          - containerPort: 8080
+          - containerPort: 50000
+      volumes:
+      - name: jenkins-home
+        persistentVolumeClaim:
+          claimName: jenkins-leader-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins-leader-svc
+  labels:
+    app: jenkins-leader
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+    name: http
+    nodePort: 30500
+  - port: 50000
+    protocol: TCP
+    name: slave
+    nodePort: 30501
+  selector:
+    app: jenkins-leader
